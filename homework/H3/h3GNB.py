@@ -12,8 +12,9 @@ def normal_dist_func_gen(mean:float , sd:float):
             prob_density = (np.pi*_std) * np.exp(-0.5*((x-_mn)/_std)**2)
             return prob_density
         except(ZeroDivisionError):
-            prob_density = (np.pi*_std) * np.exp(-0.5*((x-_mn)/(_std+1000))**2)
-            return prob_density
+            #print("zero value encountered, sd: ",sd," mean: ",mean)
+            prob_density = (np.pi*_std) * np.exp(-0.5*((x-_mn)/(_std+.0000000000001))**2)
+            return 0
     return pdf
 
 # calc mean and std for X0
@@ -41,13 +42,13 @@ def preproc_data():
     df.loc[df[col_name] == "I",col_name] =2
     X=df.iloc[:,:-1].values
     y=df.iloc[:,-1].values
-    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=.2,random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=.4,random_state=0)
 
     y_sums = {"{}".format(i):0 for i in range(0,30)}
 
     for num in y_train:
         y_sums[str(num)]+=1
-    
+    print(y_sums)
     return X_train,X_test,y_train,y_test,y_sums
 
 def calc_prob_dist(X_train, y_sums, y_train):
@@ -82,6 +83,8 @@ def calc_prob_dist(X_train, y_sums, y_train):
         for i in range(1,X_train.shape[1]+1):
             m_xy[m_xstr.format(i,y)] /= y_sums[str(y)]
 
+    #print(m_xy)
+
     #this makes the std
     for j in range(len(y_train)):
         y = y_train[j]
@@ -91,6 +94,8 @@ def calc_prob_dist(X_train, y_sums, y_train):
                 sigma_x_m_2(m_xy[m_xstr.format(i,y)],X_train,y_train,i-1,y)/n
                 )
     
+    #print(std_xy)
+
     xiy_pdf = {"y{}".format(y):{} for y in range(1,30)}
     for yi in range(1,30):
         xiy_pdf["y{}".format(yi)] = {"x{}".format(xi+1):normal_dist_func_gen(mean=m_xy[m_xstr.format(xi+1,yi)],sd=std_xy[std_xstr.format(xi+1,yi)]) for xi in range(0,8)}
@@ -114,15 +119,19 @@ def GNB_Test(xiy_pdf,y_pdf,X_test,y_test):
         itter+=1
     return obs_act_list
             
-
-
+def process_results(res_list:list):
+    num_match = 0
+    for elem in res_list:
+        if (elem[0] == elem[1]):
+            num_match+=1
+    return (num_match/len(res_list))*100
 
 def GNBayes():
     X_train,X_test,y_train,y_test,y_sums = preproc_data()
     xiy_pdf = calc_prob_dist(X_train,y_sums,y_train)
     y_pdf = normal_dist_func_gen(mean=9.934,sd=3.224)
     results = GNB_Test(xiy_pdf,y_pdf,X_test,y_test)
-    print(results)
+    print("accuracy of {}".format(process_results(results)))
     
 
 if __name__ == '__main__':
