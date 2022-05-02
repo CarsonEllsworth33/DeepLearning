@@ -13,7 +13,7 @@ def normal_dist_func_gen(mean:float , sd:float):
             return prob_density
         except(ZeroDivisionError):
             #print("zero value encountered, sd: ",sd," mean: ",mean)
-            prob_density = (np.pi*_std) * np.exp(-0.5*((x-_mn)/(_std+.0000000000001))**2)
+            prob_density = (np.pi*_std) * np.exp(-0.5*((x-_mn)/(_std+1000000))**2)
             return 0
     return pdf
 
