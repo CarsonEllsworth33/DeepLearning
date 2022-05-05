@@ -34,7 +34,7 @@ def cifar10_plot(data, meta, im_idx=0):
 
 def choose_indices(data_dict):
     ind_list = []
-    while(len(ind_list)<=indices_list_len):
+    while(len(ind_list)<indices_list_len):
         ind = rd.randint(0,len(data_dict[KEY_DATA])-1)
         while(ind in ind_list):
             ind = rd.randint(0,len(data_dict[KEY_DATA])-1)
